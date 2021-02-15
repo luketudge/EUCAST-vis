@@ -3,6 +3,7 @@ Display the EUCAST data.
 """
 
 import mizani
+import numpy
 import pandas
 import plotnine
 import streamlit
@@ -54,7 +55,7 @@ d = pandas.melt(
 
 d['concentration'] = d['concentration'].astype(float)
 
-accessed = d['accessed'][0]
+d['strain'] = numpy.where(d['concentration'] > d['ECOFF'], 'resistant', 'wildtype')
 
 
 #%% sidebar
@@ -79,7 +80,7 @@ d = d[d['SPECIES'] == species]
 
 streamlit.title('EUCAST')
 
-streamlit.markdown('accessed ' + accessed)
+streamlit.markdown('accessed ' + d['accessed'].iloc[0])
 
 streamlit.header(antibiotic + ': ' + species)
 
@@ -96,9 +97,10 @@ fig = (
     + plotnine.geom_col()
 )
 
+
 streamlit.pyplot(fig.draw())
 
 
 #%% data (for debugging)
 
-#streamlit.dataframe(d)
+streamlit.dataframe(d)
