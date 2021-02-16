@@ -37,6 +37,7 @@ OTHER_COLS = [
     'ANTIBIOTIC',
     'SPECIES',
     'ECOFF',
+    'ECOFF_tentative',
     'accessed'
 ]
 
@@ -78,17 +79,21 @@ d = d[d['SPECIES'] == species]
 
 #%% main column
 
-streamlit.title('EUCAST')
+streamlit.title(antibiotic + ': ' + species)
 
-streamlit.markdown('accessed ' + d['accessed'].iloc[0])
-
-streamlit.header(antibiotic + ': ' + species)
+streamlit.markdown(
+    'source: [EUCAST](https://mic.eucast.org) accessed ' + d['accessed'].iloc[0]
+)
 
 fig = (
-    plotnine.ggplot(d, plotnine.aes(x = 'concentration', y = 'n'))
+    plotnine.ggplot(d, plotnine.aes(x = 'concentration', y = 'n', fill = 'strain'))
     + plotnine.scale_x_continuous(
         breaks = pandas.unique(d['concentration']),
         trans = mizani.transforms.log2_trans
+    )
+    + plotnine.scale_fill_manual(
+        ['blue', 'red'],
+        limits = ['wildtype', 'resistant']
     )
     + plotnine.theme(
         axis_text_x = plotnine.element_text(rotation = 45)
@@ -100,7 +105,10 @@ fig = (
 
 streamlit.pyplot(fig.draw())
 
+if not numpy.isnan(d['ECOFF'].iloc[0]) and d['ECOFF_tentative'].iloc[0]:
+    streamlit.markdown('NOTE: epidemiological cut-off value is tentative (based on fewer than 5 distributions)')
+
 
 #%% data (for debugging)
 
-streamlit.dataframe(d)
+#streamlit.dataframe(d)
